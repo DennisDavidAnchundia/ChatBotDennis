@@ -48,9 +48,20 @@ const INSTRUCCIONES = ` Eres "Dennis David AI", el asistente inteligente y gemel
   DATOS DE CONTACTO (Solo si te los piden):`;
 
 // 3. Eventos
-client.on('qr', qr => {
-    console.log('🟡 [SISTEMA] Nuevo código QR generado:');
+client.on('qr', async (qr) => {
+    // 1. Sigue intentando mostrarlo en consola por si acaso
     qrcode.generate(qr, { small: true });
+
+    // 2. EL TRUCO: Generamos una URL de imagen para verla en el navegador
+    try {
+        const url = await QRCode.toDataURL(qr);
+        console.log("---------------------------------------------------------");
+        console.log("🚀 SI NO PUEDES ESCANEAR EL QR DE ARRIBA, COPIA ESTE DATA-URL:");
+        console.log(url);
+        console.log("---------------------------------------------------------");
+    } catch (err) {
+        console.error("Error generando QR alternativo", err);
+    }
 });
 
 client.on('ready', () => console.log('🚀 [SISTEMA] Dennis AI Online y Conectado'));
