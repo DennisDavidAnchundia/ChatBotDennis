@@ -1,20 +1,20 @@
 require('dotenv').config();
-const { Client, LocalAuth } = require('whatsapp-web.js'); // Asegúrate de tener MessageMedia aquí si la usas en index
+const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
+const QRCode = require('qrcode'); // <--- TE FALTABA ESTA IMPORTACIÓN
 const connectDB = require('./config/database');
 const { handleMessage } = require('./handlers/messageHandler');
-
-const express = require("express")
+const express = require("express");
 
 // 1. Iniciar DB
 connectDB();
 
-// 2. Configurar Cliente con parámetros para Servidor
+// 2. Configurar Cliente
 const client = new Client({
-    authStrategy: new LocalAuth(),
+    authStrategy: new LocalAuth(), // Al borrar la carpeta .wwebjs_auth esto se resetea
     puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox'], // Clave para Railway/Render
-        headless: true
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        headless: true // En local puedes ponerlo en false para ver el navegador
     }
 });
 
@@ -49,14 +49,14 @@ const INSTRUCCIONES = ` Eres "Dennis David AI", el asistente inteligente y gemel
 
 // 3. Eventos
 client.on('qr', async (qr) => {
-    // 1. Sigue intentando mostrarlo en consola por si acaso
+    // Generar en consola
     qrcode.generate(qr, { small: true });
 
-    // 2. EL TRUCO: Generamos una URL de imagen para verla en el navegador
+    // Generar Data-URL para Render
     try {
-        const url = await QRCode.toDataURL(qr);
+        const url = await QRCode.toDataURL(qr); // Ahora sí funcionará con el import
         console.log("---------------------------------------------------------");
-        console.log("🚀 SI NO PUEDES ESCANEAR EL QR DE ARRIBA, COPIA ESTE DATA-URL:");
+        console.log("🚀 DATA-URL DEL QR (Cópialo y pégalo en el navegador):");
         console.log(url);
         console.log("---------------------------------------------------------");
     } catch (err) {
@@ -66,20 +66,19 @@ client.on('qr', async (qr) => {
 
 client.on('ready', () => console.log('🚀 [SISTEMA] Dennis AI Online y Conectado'));
 
-// 4. Manejo de mensajes (Pasamos el cliente, el mensaje y el prompt)
+// Manejo de mensajes
 client.on('message', async (msg) => {
-    // Agregamos un log para ver en consola quién escribe
     console.log(`📩 Mensaje de: ${msg.from}`);
     await handleMessage(client, msg, INSTRUCCIONES);
 });
 
+// Inicializar
 client.initialize();
 
+// Servidor Express (Movido abajo para asegurar orden)
 const app = express();
 const PORT = process.env.PORT || 3000;
-
 app.get('/', (req, res) => res.send('Bot de Dennis David está Vivo 🚀'));
-
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`📡 Servidor de monitoreo en puerto ${PORT}`);
 });
