@@ -12,23 +12,16 @@ connectDB();
 // 2. Configurar Cliente
 const client = new Client({
     authStrategy: new LocalAuth(),
-    authTimeoutMs: 60000, // Espera 1 minuto a que cargue la autenticación
-    qrMaxRetries: 5,      // No generes QR infinitos si falla
     puppeteer: {
         headless: true,
+        // Eliminamos la ruta fija del código y dejamos que la tome del sistema o la imagen
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--disable-setuid-sandbox',
-            '--no-zygote',
-            '--single-process', // Crucial para ahorrar RAM en Render
-            '--disable-gpu',
-            '--disable-canvas-aa',
-            '--disable-2d-canvas-clip-utils',
-            '--disable-gl-drawing-for-tests'
+            '--single-process'
         ],
-        // Esto ayuda a que no intente descargar Chromium de nuevo
+        // Esto buscará automáticamente dónde está Chrome en Render/Docker
         executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable'
     }
 });
