@@ -80,13 +80,15 @@ client.on('ready', () => {
 
 // Manejo de mensajes
 // 2. Modifica el evento de mensaje para ver si "lee" pero no "responde"
-client.on('message', async (msg) => {
-    console.log(`📩 LLEGÓ UN MENSAJE: ${msg.body}`);
+client.on('message_create', async (msg) => {
+    // Esto ignorará los mensajes que el bot envía para no entrar en bucle
+    if (msg.fromMe) return; 
+
+    console.log(`📩 LLEGÓ UN MENSAJE (create): ${msg.body}`);
     
-    // Prueba de respuesta directa (Sin IA)
     if (msg.body.toLowerCase().includes('hola')) {
-        console.log("🤖 Respondiendo saludo de prueba...");
-        await msg.reply('¡Hola! Soy el bot de Dennis. Si recibes esto, la conexión está perfecta.');
+        console.log("🤖 Respondiendo saludo...");
+        await msg.reply('¡Hola! Prueba superada.');
         return;
     }
 
@@ -108,5 +110,6 @@ app.get('/', (req, res) => res.send('Bot de Dennis David está Vivo 🚀'));
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`📡 Servidor de monitoreo en puerto ${PORT}`);
 });
+
 
 
