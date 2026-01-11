@@ -77,10 +77,24 @@ client.on('ready', () => console.log('🚀 [SISTEMA] Dennis AI Online y Conectad
 
 // Manejo de mensajes
 client.on('message', async (msg) => {
-    console.log(`📩 Mensaje de: ${msg.from}`);
-    await handleMessage(client, msg, INSTRUCCIONES);
+    // Esto DEBE aparecer si el bot recibe algo
+    console.log('--- NUEVO EVENTO DETECTADO ---');
+    console.log(`📩 De: ${msg.from} | Texto: ${msg.body}`);
+    
+    try {
+        await handleMessage(client, msg, INSTRUCCIONES);
+        console.log('✅ Respuesta procesada con éxito');
+    } catch (error) {
+        console.error('❌ Error en el Handler:', error);
+    }
+});
+client.on('authenticated', () => {
+    console.log('✅ Autenticación exitosa en WhatsApp');
 });
 
+client.on('auth_failure', (msg) => {
+    console.error('❌ Fallo de autenticación:', msg);
+});
 // Inicializar
 client.initialize();
 
