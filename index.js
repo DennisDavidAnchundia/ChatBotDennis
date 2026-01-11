@@ -73,28 +73,40 @@ client.on('qr', async (qr) => {
     }
 });
 
-client.on('ready', () => console.log('🚀 [SISTEMA] Dennis AI Online y Conectado'));
-
-// Manejo de mensajes
-client.on('message', async (msg) => {
-    // Esto DEBE aparecer si el bot recibe algo
-    console.log('--- NUEVO EVENTO DETECTADO ---');
-    console.log(`📩 De: ${msg.from} | Texto: ${msg.body}`);
-    
-    try {
-        await handleMessage(client, msg, INSTRUCCIONES);
-        console.log('✅ Respuesta procesada con éxito');
-    } catch (error) {
-        console.error('❌ Error en el Handler:', error);
-    }
-});
+// 1. Añade estos eventos para saber EXACTAMENTE qué pasa después del QR
 client.on('authenticated', () => {
-    console.log('✅ Autenticación exitosa en WhatsApp');
+    console.log('✅ [SISTEMA] ¡Autenticado! Guardando sesión...');
 });
 
 client.on('auth_failure', (msg) => {
-    console.error('❌ Fallo de autenticación:', msg);
+    console.error('❌ [ERROR] Fallo de autenticación:', msg);
+    // Si falla, intentamos reiniciar para pedir QR nuevo
 });
+
+client.on('ready', () => {
+    console.log('🚀 [SISTEMA] Dennis AI Online y Conectado');
+    console.log('📱 Cliente listo para recibir mensajes');
+});
+
+// Manejo de mensajes
+// 2. Modifica el evento de mensaje para ver si "lee" pero no "responde"
+client.on('message', async (msg) => {
+    console.log(`📩 NUEVO MENSAJE RECIBIDO`);
+    console.log(`👤 De: ${msg.from}`);
+    console.log(`📝 Contenido: ${msg.body}`);
+
+    try {
+        console.log("🤖 Llamando a la IA...");
+        await handleMessage(client, msg, INSTRUCCIONES);
+        console.log("✅ Respuesta de IA enviada.");
+    } catch (error) {
+        console.error("❌ ERROR EN HANDLER:", error);
+        // Respuesta de emergencia por si la IA falla
+        client.sendMessage(msg.from, "Lo siento, tuve un error interno procesando tu mensaje.");
+    }
+});
+
+
 // Inicializar
 client.initialize();
 
