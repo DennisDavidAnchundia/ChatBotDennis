@@ -1,18 +1,23 @@
-# Esta imagen ya viene con Chrome instalado en el lugar correcto
 FROM ghcr.io/puppeteer/puppeteer:latest
 
 USER root
-# Instalamos dependencias necesarias
+
+# Instalamos dependencias de sistema
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
+# Copiamos archivos de dependencias
 COPY package*.json ./
 RUN npm install
+
+# Copiamos el resto del código
 COPY . .
 
-# IMPORTANTE: Puppeteer en esta imagen instala Chrome en esta ruta:
+# Obligamos a que la ruta del ejecutable sea la de esta imagen
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
 CMD ["node", "index.js"]

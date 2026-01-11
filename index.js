@@ -9,19 +9,22 @@ const express = require("express");
 // 1. Iniciar DB
 connectDB();
 
-// 2. Configurar Cliente
 const client = new Client({
     authStrategy: new LocalAuth(),
+    // --- ESTAS LÍNEAS SON NUEVAS ---
+    qrMaxRetries: 3,       // Si falla 3 veces, deja de intentar (evita el spam de QR)
+    authTimeoutMs: 60000,  // Da 1 minuto para loguear (Render es lento)
+    // -------------------------------
     puppeteer: {
         headless: true,
-        // Eliminamos la ruta fija del código y dejamos que la tome del sistema o la imagen
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--single-process'
+            '--single-process',
+            '--no-zygote',         // Ahorra RAM
+            '--disable-gpu'        // Ahorra RAM
         ],
-        // Esto buscará automáticamente dónde está Chrome en Render/Docker
         executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable'
     }
 });
