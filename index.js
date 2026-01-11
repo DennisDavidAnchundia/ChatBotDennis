@@ -11,19 +11,9 @@ connectDB();
 
 const client = new Client({
     authStrategy: new LocalAuth(),
-    qrMaxRetries: 3,
-    authTimeoutMs: 60000,
     puppeteer: {
-        headless: true,
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--single-process',
-            '--no-zygote'
-        ]
-        // BORRA O COMENTA LA LÍNEA executablePath
-        // executablePath: '/usr/bin/google-chrome-stable' <-- ELIMINA ESTO
+        browserWSEndpoint: `wss://chrome.browserless.io?token=2Tm2I0ISBmDhxxD9e85afcc4bd50151d649f729a372b66acb`,
+        headless: true
     }
 });
 
