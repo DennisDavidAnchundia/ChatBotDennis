@@ -81,18 +81,19 @@ client.on('ready', () => {
 // Manejo de mensajes
 // 2. Modifica el evento de mensaje para ver si "lee" pero no "responde"
 client.on('message', async (msg) => {
-    console.log(`📩 NUEVO MENSAJE RECIBIDO`);
-    console.log(`👤 De: ${msg.from}`);
-    console.log(`📝 Contenido: ${msg.body}`);
+    console.log(`📩 LLEGÓ UN MENSAJE: ${msg.body}`);
+    
+    // Prueba de respuesta directa (Sin IA)
+    if (msg.body.toLowerCase().includes('hola')) {
+        console.log("🤖 Respondiendo saludo de prueba...");
+        await msg.reply('¡Hola! Soy el bot de Dennis. Si recibes esto, la conexión está perfecta.');
+        return;
+    }
 
     try {
-        console.log("🤖 Llamando a la IA...");
         await handleMessage(client, msg, INSTRUCCIONES);
-        console.log("✅ Respuesta de IA enviada.");
     } catch (error) {
-        console.error("❌ ERROR EN HANDLER:", error);
-        // Respuesta de emergencia por si la IA falla
-        client.sendMessage(msg.from, "Lo siento, tuve un error interno procesando tu mensaje.");
+        console.error("❌ ERROR CRÍTICO EN EL HANDLER:", error);
     }
 });
 
