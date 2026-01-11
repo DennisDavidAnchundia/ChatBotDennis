@@ -10,22 +10,26 @@ const express = require("express");
 connectDB();
 
 // 2. Configurar Cliente
-const isRender = process.env.RENDER === 'true' || process.env.PORT;
-
 const client = new Client({
     authStrategy: new LocalAuth(),
+    authTimeoutMs: 60000, // Espera 1 minuto a que cargue la autenticación
+    qrMaxRetries: 5,      // No generes QR infinitos si falla
     puppeteer: {
-        headless: true, // Siempre true para que no pida ventana en el servidor
-        args: isRender ? [
+        headless: true,
+        args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--single-process' // Solo en Render
-        ] : [
-            '--no-sandbox' // En local más simple
+            '--disable-setuid-sandbox',
+            '--no-zygote',
+            '--single-process', // Crucial para ahorrar RAM en Render
+            '--disable-gpu',
+            '--disable-canvas-aa',
+            '--disable-2d-canvas-clip-utils',
+            '--disable-gl-drawing-for-tests'
         ],
-        // En Render usamos la ruta de Linux, en Local la de Windows (si es necesaria)
-        executablePath: isRender ? '/usr/bin/google-chrome-stable' : undefined 
+        // Esto ayuda a que no intente descargar Chromium de nuevo
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable'
     }
 });
 
@@ -93,3 +97,5 @@ app.get('/', (req, res) => res.send('Bot de Dennis David está Vivo 🚀'));
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`📡 Servidor de monitoreo en puerto ${PORT}`);
 });
+
+
