@@ -10,11 +10,22 @@ const express = require("express");
 connectDB();
 
 // 2. Configurar Cliente
+const isRender = process.env.RENDER === 'true' || process.env.PORT;
+
 const client = new Client({
-    authStrategy: new LocalAuth(), // Al borrar la carpeta .wwebjs_auth esto se resetea
+    authStrategy: new LocalAuth(),
     puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        headless: true // En local puedes ponerlo en false para ver el navegador
+        headless: true, // Siempre true para que no pida ventana en el servidor
+        args: isRender ? [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--single-process' // Solo en Render
+        ] : [
+            '--no-sandbox' // En local más simple
+        ],
+        // En Render usamos la ruta de Linux, en Local la de Windows (si es necesaria)
+        executablePath: isRender ? '/usr/bin/google-chrome-stable' : undefined 
     }
 });
 
