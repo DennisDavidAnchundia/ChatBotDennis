@@ -4,6 +4,8 @@ const qrcode = require('qrcode-terminal');
 const connectDB = require('./config/database');
 const { handleMessage } = require('./handlers/messageHandler');
 
+const express = require("express")
+
 // 1. Iniciar DB
 connectDB();
 
@@ -61,3 +63,12 @@ client.on('message', async (msg) => {
 });
 
 client.initialize();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => res.send('Bot de Dennis David está Vivo 🚀'));
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`📡 Servidor de monitoreo en puerto ${PORT}`);
+});

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: bot-dennis-david
+    env: docker
+    plan: free
+    region: ohio
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: PORT
+        value: 3000
