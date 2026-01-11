@@ -11,21 +11,18 @@ connectDB();
 
 const client = new Client({
     authStrategy: new LocalAuth(),
-    // --- ESTAS LÍNEAS SON NUEVAS ---
-    qrMaxRetries: 3,       // Si falla 3 veces, deja de intentar (evita el spam de QR)
-    authTimeoutMs: 60000,  // Da 1 minuto para loguear (Render es lento)
-    // -------------------------------
+    qrMaxRetries: 3,
+    authTimeoutMs: 60000,
     puppeteer: {
         headless: true,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--single-process',
-            '--no-zygote',         // Ahorra RAM
-            '--disable-gpu'        // Ahorra RAM
+            '--single-process'
         ],
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable'
+        // PRUEBA PRIMERO SIN ESTA LÍNEA (coméntala):
+        // executablePath: '/usr/bin/google-chrome-stable' 
     }
 });
 
