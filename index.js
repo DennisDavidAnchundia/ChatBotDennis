@@ -19,10 +19,11 @@ const client = new Client({
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--single-process'
-        ],
-        // PRUEBA PRIMERO SIN ESTA LÍNEA (coméntala):
-        // executablePath: '/usr/bin/google-chrome-stable' 
+            '--single-process',
+            '--no-zygote'
+        ]
+        // BORRA O COMENTA LA LÍNEA executablePath
+        // executablePath: '/usr/bin/google-chrome-stable' <-- ELIMINA ESTO
     }
 });
 
