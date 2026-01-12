@@ -28,7 +28,6 @@ const handleMessage = async (client, msg, instructions) => {
         }
 
         // 4. Limpieza de Historial - Formato compacto para Groq/IA
-        // Solo enviamos los últimos 4 mensajes para ahorrar RAM en Render
         const history = (chatData.historial || [])
             .filter(h => h.parts && h.parts[0] && h.parts[0].text)
             .slice(-4) 
@@ -47,7 +46,6 @@ const handleMessage = async (client, msg, instructions) => {
         chatData.historial.push({ role: "user", parts: [{ text: msg.body }] });
         chatData.historial.push({ role: "model", parts: [{ text: aiResponse }] });
         
-        // Mantener DB limpia: Solo 10 mensajes máximo por usuario
         if (chatData.historial.length > 10) {
             chatData.historial = chatData.historial.slice(-10);
         }
@@ -60,7 +58,6 @@ const handleMessage = async (client, msg, instructions) => {
 
     } catch (error) {
         console.error("❌ ERROR EN HANDLER:", error.message);
-        // Si hay error, intentamos responder algo genérico pero amigable
         if (msg.body.length < 100) {
             await msg.reply("Disculpa, tuve un pequeño problema técnico. ¿Podrías decirme eso de nuevo?");
         }

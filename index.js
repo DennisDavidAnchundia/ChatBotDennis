@@ -102,10 +102,10 @@ client.initialize();
 
 // Servidor Express (Movido abajo para asegurar orden)
 const app = express();
-const PORT = process.env.PORT || 3000;
-app.get('/', (req, res) => res.send('Bot de Dennis David está Vivo 🚀'));
+const PORT = process.env.PORT || 7860; 
+
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`📡 Servidor de monitoreo en puerto ${PORT}`);
+    console.log(`📡 Servidor de monitoreo activo en puerto ${PORT}`);
 });
 
 
