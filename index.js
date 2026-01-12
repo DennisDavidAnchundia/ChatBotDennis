@@ -81,21 +81,18 @@ client.on('ready', () => {
 // Manejo de mensajes
 // 2. Modifica el evento de mensaje para ver si "lee" pero no "responde"
 client.on('message_create', async (msg) => {
-    // Esto ignorará los mensajes que el bot envía para no entrar en bucle
-    if (msg.fromMe) return; 
+    // 1. Ignorar mensajes que envía el propio bot para no crear un bucle infinito
+    if (msg.fromMe) return;
 
-    console.log(`📩 LLEGÓ UN MENSAJE (create): ${msg.body}`);
-    
-    if (msg.body.toLowerCase().includes('hola')) {
-        console.log("🤖 Respondiendo saludo...");
-        await msg.reply('¡Hola! Prueba superada.');
-        return;
-    }
+    console.log(`📩 PROCESANDO: ${msg.body}`);
 
     try {
+        // 2. Llamamos directamente al manejador que corregimos antes
+        console.log("🤖 Consultando a Dennis AI...");
         await handleMessage(client, msg, INSTRUCCIONES);
+        console.log("✅ Respuesta enviada satisfactoriamente");
     } catch (error) {
-        console.error("❌ ERROR CRÍTICO EN EL HANDLER:", error);
+        console.error("❌ ERROR EN EL PROCESO:", error);
     }
 });
 
