@@ -3,65 +3,67 @@ const { generateResponse } = require('../services/aiService');
 const Chat = require('../models/Chat');
 
 const handleMessage = async (client, msg, instructions) => {
-    // 1. Ignorar grupos y estados
+    // 1. Filtro de seguridad inmediato
     if (msg.from.includes('@g.us') || msg.from === 'status@broadcast') return;
 
     try {
-        const query = msg.body.toLowerCase().trim();
+        const query = msg.body ? msg.body.toLowerCase().trim() : "";
 
-        // 2. Lógica de Comandos (CV) - Con verificación de archivo
+        // 2. Comandos directos (CV) - Respuesta rápida sin pasar por IA ni DB
         if (query.includes('cv') || query.includes('hoja de vida')) {
             try {
                 const media = MessageMedia.fromFilePath('./DennisDavidAnchundiaDelgadoCV.pdf');
                 return await client.sendMessage(msg.from, media, { caption: 'Aquí tienes mi CV Dennis David 🚀' });
             } catch (err) {
                 console.error("Error al enviar PDF:", err);
-                return await msg.reply("Lo siento, mi CV no está disponible en este momento.");
+                return await msg.reply("Lo siento, no pude cargar el archivo. Inténtalo más tarde.");
             }
         }
 
-        // 3. Lógica de Memoria (Búsqueda en DB)
-        let chatData = await Chat.findOne({ usuarioId: msg.from });
+        // 3. Gestión de Memoria (MongoDB) - Con Timeout preventivo
+        let chatData = await Chat.findOne({ usuarioId: msg.from }).maxTimeMS(2000); // 2 seg max para buscar
         
         if (!chatData) {
             chatData = new Chat({ usuarioId: msg.from, historial: [] });
         }
 
-        // 4. Formateo de Historial (Simplificado para evitar errores de undefined)
-        const history = (chatData.historial || []).map(h => {
-            // Verificamos si existe la estructura antes de mapear
-            const contentText = h.parts && h.parts[0] ? h.parts[0].text : "";
-            return {
+        // 4. Limpieza de Historial - Formato compacto para Groq/IA
+        // Solo enviamos los últimos 4 mensajes para ahorrar RAM en Render
+        const history = (chatData.historial || [])
+            .filter(h => h.parts && h.parts[0] && h.parts[0].text)
+            .slice(-4) 
+            .map(h => ({
                 role: h.role === 'model' ? 'assistant' : 'user',
-                content: contentText
-            };
-        }).filter(h => h.content !== "").slice(-6); // Bajamos a 6 mensajes para ahorrar memoria en Render
+                content: h.parts[0].text
+            }));
 
         // 5. Llamada a la IA
-        console.log(`🤖 Procesando respuesta para: ${msg.from}`);
+        console.log(`🤖 IA trabajando para: ${msg.from}`);
         const aiResponse = await generateResponse(history, msg.body, instructions);
 
-        if (!aiResponse) {
-            throw new Error("La IA no devolvió ninguna respuesta.");
-        }
+        if (!aiResponse) throw new Error("IA Empty Response");
 
-        // 6. Guardar en Base de Datos
+        // 6. Actualización de DB (En segundo plano para no retrasar el mensaje)
         chatData.historial.push({ role: "user", parts: [{ text: msg.body }] });
         chatData.historial.push({ role: "model", parts: [{ text: aiResponse }] });
         
-        // Limitar historial en DB para no saturar MongoDB
-        if (chatData.historial.length > 20) chatData.historial.shift();
+        // Mantener DB limpia: Solo 10 mensajes máximo por usuario
+        if (chatData.historial.length > 10) {
+            chatData.historial = chatData.historial.slice(-10);
+        }
         
-        await chatData.save();
+        chatData.save().catch(e => console.error("Error guardando DB:", e));
 
-        // 7. RESPONDER
+        // 7. Respuesta final al usuario
         await msg.reply(aiResponse);
-        console.log("✅ Respuesta enviada con éxito");
+        console.log("✅ Ciclo completado");
 
     } catch (error) {
-        console.error("❌ ERROR EN EL HANDLER:", error);
-        // No enviamos el error técnico al usuario, solo un aviso
-        await msg.reply("Estoy procesando mucha información ahora mismo. ¿Podrías repetirme eso?");
+        console.error("❌ ERROR EN HANDLER:", error.message);
+        // Si hay error, intentamos responder algo genérico pero amigable
+        if (msg.body.length < 100) {
+            await msg.reply("Disculpa, tuve un pequeño problema técnico. ¿Podrías decirme eso de nuevo?");
+        }
     }
 };
 
